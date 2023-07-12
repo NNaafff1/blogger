@@ -1,8 +1,5 @@
-
 const GroupForm = () => {
-  return (
-    <div>GroupForm</div>
-  )
-}
+  return <></>;
+};
 
-export default GroupForm
+export default GroupForm;

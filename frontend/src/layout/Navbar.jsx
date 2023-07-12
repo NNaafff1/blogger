@@ -2,9 +2,12 @@ import {
   AppBar,
   Avatar,
   Box,
+  Button,
   ButtonBase,
   Container,
   InputBase,
+  Menu,
+  MenuItem,
   Stack,
   Toolbar,
   alpha,
@@ -13,9 +16,12 @@ import {
   useTheme,
 } from "@mui/material";
 import SearchIcon from "@mui/icons-material/Search";
-import { Link } from "react-router-dom";
+import { Link, useNavigate } from "react-router-dom";
 import Sidebar from "./Sidebar";
-const Search = styled("div")(({ theme }) => ({
+import React, { useContext } from "react";
+import AuthContext from "../context/Auth/AuthContext";
+
+export const Search = styled("div")(({ theme }) => ({
   position: "relative",
   borderRadius: theme.shape.borderRadius,
   backgroundColor: alpha(theme.palette.common.white, 0.15),
@@ -31,7 +37,7 @@ const Search = styled("div")(({ theme }) => ({
   },
 }));
 
-const SearchIconWrapper = styled("div")(({ theme }) => ({
+export const SearchIconWrapper = styled("div")(({ theme }) => ({
   padding: theme.spacing(0, 2),
   height: "100%",
   position: "absolute",
@@ -41,7 +47,7 @@ const SearchIconWrapper = styled("div")(({ theme }) => ({
   justifyContent: "center",
 }));
 
-const StyledInputBase = styled(InputBase)(({ theme }) => ({
+export const StyledInputBase = styled(InputBase)(({ theme }) => ({
   color: "inherit",
   "& .MuiInputBase-input": {
     padding: theme.spacing(1, 1, 1, 0),
@@ -54,50 +60,113 @@ const StyledInputBase = styled(InputBase)(({ theme }) => ({
     },
   },
 }));
+
 const Navbar = () => {
   const theme = useTheme();
   const isMatch = useMediaQuery(theme.breakpoints.down("md"));
+  const navigate = useNavigate();
+  const { authState, logoutUser } = useContext(AuthContext);
+  const [anchorEl, setAnchorEl] = React.useState(null);
+
+  const open = Boolean(anchorEl);
+
+  const handleClick = (event) => {
+    setAnchorEl(event.currentTarget);
+  };
+  const handleClose = () => {
+    setAnchorEl(null);
+  };
+
+  const avatarMenu = (
+    <div>
+      <Button onClick={handleClick}>
+        <Avatar alt="" />
+      </Button>
+      <Menu
+        id="demo-positioned-menu"
+        aria-labelledby="demo-positioned-button"
+        anchorEl={anchorEl}
+        open={open}
+        onClose={handleClose}
+        anchorOrigin={{
+          vertical: "bottom",
+          horizontal: "center",
+        }}
+        transformOrigin={{
+          vertical: "top",
+          horizontal: "left",
+        }}
+      >
+        <MenuItem
+          onClick={() => {
+            navigate("profile");
+            handleClose();
+          }}
+          value="profile"
+        >
+          Profile
+        </MenuItem>
+        <MenuItem onClick={logoutUser}>Logout</MenuItem>
+      </Menu>
+    </div>
+  );
 
   return (
-    <AppBar>
-      <Toolbar>
-        <Box width='100%'>
-          <Stack
-            justifyContent="space-between"
-            alignItems="center"
-            flexDirection="row"
-          >
-            <Stack flexDirection="row" alignItems="center" gap={1}>
-              {isMatch ? <Sidebar /> : <></>}
-              <Box sx={{ fontSize: "24px" }}>Bloger</Box>
+    <AppBar position="static" sx={{ marginBottom: "50px" }}>
+      <Toolbar sx={{ padding: "0 !important" }}>
+        <Container maxWidth="lg">
+          <Box width="100%">
+            <Stack
+              justifyContent="space-between"
+              alignItems="center"
+              flexDirection="row"
+            >
+              <Stack flexDirection="row" alignItems="center" gap={1}>
+                {isMatch ? <Sidebar /> : <></>}
+                <Box sx={{ fontSize: "24px" }}>Bloger</Box>
+              </Stack>
+              <Search>
+                <SearchIconWrapper>
+                  <SearchIcon />
+                </SearchIconWrapper>
+                <StyledInputBase
+                  placeholder="Search…"
+                  inputProps={{ "aria-label": "search" }}
+                />
+              </Search>
+              <Stack flexDirection="row" alignItems="center" gap={4}>
+                {!isMatch ? (
+                  <ButtonBase
+                    component={Link}
+                    to="/"
+                    disableRipple
+                    sx={{ fontSize: "20px" }}
+                  >
+                    Home
+                  </ButtonBase>
+                ) : (
+                  <></>
+                )}
+
+                {!authState ? (
+                  <Button
+                    sx={{
+                      bgcolor: theme.palette.secondary.main,
+                      color: "white",
+                    }}
+                    disableRipple
+                    component={Link}
+                    to={"/login"}
+                  >
+                    login
+                  </Button>
+                ) : (
+                  avatarMenu
+                )}
+              </Stack>
             </Stack>
-            <Search>
-              <SearchIconWrapper>
-                <SearchIcon />
-              </SearchIconWrapper>
-              <StyledInputBase
-                placeholder="Search…"
-                inputProps={{ "aria-label": "search" }}
-              />
-            </Search>
-            <Stack flexDirection="row" alignItems="center" gap={4}>
-              {!isMatch ? (
-                <ButtonBase
-                  compnent={Link}
-                  to="/"
-                  disableRipple
-                  sx={{ fontSize: "20px" }}
-                >
-                  Home
-                </ButtonBase>
-              ) : (
-                <></>
-              )}
-             
-              <Avatar />
-            </Stack>
-          </Stack>
-        </Box>
+          </Box>
+        </Container>
       </Toolbar>
     </AppBar>
   );
