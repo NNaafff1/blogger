@@ -9,44 +9,44 @@ export const axiosContext = createContext({});
 export const baseURL = "http://localhost:8000/";
 
 const AxiosProvider = ({ children }) => {
-  const { authTokens } = useAuth();
+  const { authState } = useAuth();
   
   const axios = useMemo(() => {
     const axios = Axios.create({
       baseURL,
       headers: {
-        "Content-Type": "applications/json",
+        "Content-Type": "application/json",
       },
     });
 
     axios.interceptors.request.use((config) => {
-      if (authTokens?.accessToken) {
-        config.headers.Authorization = `Bearer ${authTokens?.accessToken}`;
+      if (authState?.access) {
+        config.headers.Authorization = `Bearer ${authState?.access}`;
       }
       return config;
     });
 
     axios.interceptors.request.use(async (req) => {
 
-      if (!authTokens?.accessToken) return req;
+      if (!authState?.access) return req;
 
-      const user = jwt_decode(authTokens?.accessToken);
+      const user = jwt_decode(authState?.access);
       const isExpired = dayjs.unix(user.exp).diff(dayjs()) < 1;
 
       if (!isExpired) return req;
 
       const response = await axios.post(`${baseURL}/api/token/refresh/`, {
-        refresh: authTokens.refresh,
+        refresh: authState.refresh,
       });
 
       //   TODO refresh in auth
 
-      req.headers.Authorization = `Bearer ${response.data.accessToken}`;
+      req.headers.Authorization = `Bearer ${response.data.access}`;
 
       return req;
     });
     return axios;
-  }, [authTokens]);
+  }, [authState]);
   return (
     <axiosContext.Provider value={axios}>{children}</axiosContext.Provider>
   );

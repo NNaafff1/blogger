@@ -1,10 +1,8 @@
-import React from "react";
-import { useContext } from "react";
-import AuthContext from "../context/Auth/AuthContext";
 import { Navigate, Outlet } from "react-router-dom";
+import useAuth from "../hooks/useAuth";
 
 const AuthenticatedOnly = () => {
-  const { user} = useContext(AuthContext);
+  const { user } = useAuth();
 
 //   console.log(authState);
 

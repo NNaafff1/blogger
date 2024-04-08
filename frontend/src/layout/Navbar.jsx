@@ -19,7 +19,7 @@ import SearchIcon from "@mui/icons-material/Search";
 import { Link, useNavigate } from "react-router-dom";
 import Sidebar from "./Sidebar";
 import React, { useContext } from "react";
-import AuthContext from "../context/Auth/AuthContext";
+import useAuth from "../hooks/useAuth";
 
 export const Search = styled("div")(({ theme }) => ({
   position: "relative",
@@ -65,7 +65,7 @@ const Navbar = () => {
   const theme = useTheme();
   const isMatch = useMediaQuery(theme.breakpoints.down("md"));
   const navigate = useNavigate();
-  const { authState, logoutUser } = useContext(AuthContext);
+  const { authState, logoutUser, user } = useAuth();
   const [anchorEl, setAnchorEl] = React.useState(null);
 
   const open = Boolean(anchorEl);
@@ -99,7 +99,7 @@ const Navbar = () => {
       >
         <MenuItem
           onClick={() => {
-            navigate("profile");
+            navigate(`/users/${user?.user_id}`);
             handleClose();
           }}
           value="profile"

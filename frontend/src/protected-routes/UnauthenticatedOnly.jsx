@@ -1,10 +1,8 @@
-import React from "react";
-import { useContext } from "react";
 import { Navigate, Outlet } from "react-router-dom";
-import AuthContext from "../context/Auth/AuthContext";
+import useAuth from "../hooks/useAuth";
 
 const UnauthenticatedOnly = () => {
-  const { user } = useContext(AuthContext);
+  const { user } = useAuth();
   return !user ? <Outlet /> : <Navigate to="/" />;
 };
 

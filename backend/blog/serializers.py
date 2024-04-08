@@ -1,11 +1,11 @@
 from rest_framework import serializers
 from . import models
-from django.contrib.auth.models import User
+from accounts.models import CustomUser
 
 
 class UserHyperLinkedSerializer(serializers.ModelSerializer):
     class Meta:
-        model = User
+        model = CustomUser
         fields = ["id", "username"]
         # extra_kwargs = {
         #     "url": {"view_name": "user-details", "lookup_field": "username"},
@@ -32,7 +32,7 @@ class GroupSerializer(serializers.ModelSerializer):
 
         if group_name:
             group = models.Group.objects.create(admin=admin, name=group_name)
-            print(group)
+            group.users.add(admin)
             return group
 
         raise serializers.ValidationError("No group name is provided")
@@ -101,7 +101,6 @@ class BlogSerializer(serializers.ModelSerializer):
     user = UserHyperLinkedSerializer(read_only=True)
     group = GroupHyperLinkedSerializer(read_only=True)
     # comments = CommentSerilaizer(many=True, read_only=True)
-    group_id = serializers.IntegerField(write_only = True)
 
     class Meta:
         model = models.Blog
@@ -122,10 +121,10 @@ class BlogSerializer(serializers.ModelSerializer):
 
     def create(self, validated_data):
         user = self.context["request"].user
-        group = models.Group.objects.get(id=validated_data.get("group_id"))
-
+        group = self.context.get('group')
+       
         blog = models.Blog.objects.create(
-            user=self.context["request"].user,
+            user=user,
             group=group,
             text=validated_data.get("text"),
             image=validated_data.get("image"),

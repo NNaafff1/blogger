@@ -1,14 +1,14 @@
 from django.urls import path, include
-from rest_framework_simplejwt.views import (
-    TokenObtainPairView,
-    TokenRefreshView,
-)
+
 from . import views
 
 urlpatterns = [
-    path("api/token/", TokenObtainPairView.as_view(), name="token_obtain_pair"),
-    path("api/token/refresh/", TokenRefreshView.as_view(), name="token_refresh"),
-    path("api/blogs/", view=views.BlogsListCreateByGroupAPIView.as_view()),
+    path("api/groups/<int:id>/blogs/", view=views.BlogsListCreateByGroupAPIView.as_view()),
+    path("api/users/<int:id>/blogs/", view=views.UserBlogsListAPIView.as_view()),
+    path("api/users/home-blogs/", view=views.UserHomeBlogsListGroupAPIView.as_view()),
+    path("api/users/<int:pk>/", view=views.UserPublicProfileRetrieveUpdateAPIView.as_view()),
+    path("api/groups/<int:pk>/members/", view=views.GroupMemebersListAPIView.as_view()),
+    path("api/members/<int:id>/groups/", view=views.UserGroupsListAPIView.as_view()),
     path("api/blogs/<int:pk>", view=views.BlogUpdateDestroyAPIView.as_view()),
     path("api/groups/", view=views.GroupListCreateAPIView.as_view(),name='groups'),
     path("api/groups/<int:pk>", view=views.GroupRetrieveUpdateDestroyAPIView.as_view()),

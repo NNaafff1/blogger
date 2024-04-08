@@ -1,10 +1,8 @@
-import { useContext } from "react";
 import { Navigate, Outlet } from "react-router-dom";
-import AuthContext from "../context/Auth/AuthContext";
-
+import useAuth from "../hooks/useAuth";
 
 const SuperAdminOnly = () => {
-  const { user } = useContext(AuthContext);
+  const { user } = useAuth();
   return user?.role === "superAdmin" ? <Outlet /> : <Navigate to="/" />;
 };
 

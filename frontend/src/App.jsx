@@ -7,20 +7,29 @@ import UnauthenticatedOnly from "./protected-routes/UnauthenticatedOnly";
 import AuthenticatedOnly from "./protected-routes/AuthenticatedOnly";
 import Login from "./pages/login";
 import Register from "./pages/register";
+import Reset from "./pages/login/RecRest/inedexReset";
+import Recovery from "./pages/login/RecRest/indexRecover";
+import Resend from "./pages/login/RecRest/Resend";
 function App() {
   return (
     <>
       <Layout>
         <Routes>
           <Route path="/" element={<Home />} />
-          <Route path="/group/:id" element={<GroupPage />} />
-          <Route path="/profile/:id" element={<Profile />} />
+          <Route path="/groups/:groupId" element={<GroupPage />} />
+          <Route path="/profile/:userId" element={<Profile />} />
           <Route element={<UnauthenticatedOnly />}>
             <Route path="/login" element={<Login />} />
             <Route path="/register" element={<Register />} />
+            <Route path="/password/reset/" element={<Recovery />} />
+            <Route path="/resend" element={<Resend />} />
+            <Route
+              path="/password/reset/confirm/:uid/:token"
+              element={<Reset />}
+            />
           </Route>
           <Route element={<AuthenticatedOnly />}>
-            <Route path="/profile" element={<Profile />} />
+            <Route path="/users/:userId" element={<Profile />} />
           </Route>
         </Routes>
       </Layout>

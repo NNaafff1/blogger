@@ -1,25 +1,9 @@
 import { Stack } from "@mui/material";
 import Group from "./Group";
 
-const groups = [
-  {
-    image: "player.jpg",
-    name: "soccer",
-    id: 1,
-  },
-  {
-    image: "player.jpg",
-    name: "soccer",
-    id: 1,
-  },
-  {
-    image: "player.jpg",
-    name: "soccer",
-    id: 1,
-  },
-];
-
-const GroupList = () => {
+const GroupList = ({ groups }) => {
+  // const {id} =
+  console.log(groups)
   return (
     <Stack padding={3} width="100%">
       {groups.map((group) => {
