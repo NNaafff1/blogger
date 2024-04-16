@@ -8,7 +8,7 @@ import useGetUserHomeBlogs from "../../api/hooks/blogs/useGetUserHomeBlogs";
 import useAuth from "../../hooks/useAuth";
 
 const Home = () => {
-  // const { data, isError, isLoading, error } = useGetUserHomeBlogs();
+  const { data, isError, isLoading, error } = useGetUserHomeBlogs();
   return (
     <Container maxWidth="lg">
       <Grid container gap={1}>

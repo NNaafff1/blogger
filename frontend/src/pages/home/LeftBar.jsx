@@ -17,7 +17,6 @@ const LeftBar = () => {
     },
   });
 
-  console.log(data)
 
   return (
     <>
