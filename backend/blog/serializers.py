@@ -27,24 +27,18 @@ class GroupSerializer(serializers.ModelSerializer):
 
     def create(self, validated_data):
         admin = self.context["request"].user
+        group_name = validated_data.get("name")
+        
+        group = models.Group.objects.create(admin=admin, name=group_name)
+        group.users.add(admin)
 
-        group_name = validated_data.get("name", None)
+        return group
 
-        if group_name:
-            group = models.Group.objects.create(admin=admin, name=group_name)
-            group.users.add(admin)
-            return group
-
-        raise serializers.ValidationError("No group name is provided")
 
     def update(self, instance, validated_data):
-        group_name = validated_data.get("name", None)
-        print(validated_data)
-        if group_name:
-            instance.name = group_name
-            return instance
-
-        raise serializers.ValidationError("No group name is provided")
+        group_name = validated_data.get("name")
+        instance.name = group_name
+        return instance
     
 
 class CommentSerilaizer(serializers.ModelSerializer):
