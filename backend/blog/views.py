@@ -8,7 +8,8 @@ from accounts.models import CustomUser
 # Create your views here.
 from django.db.models import Subquery, OuterRef
 from rest_framework.parsers import MultiPartParser, FormParser
-
+from django.contrib.auth import get_user_model
+from rest_framework.exceptions import NotFound
 
 class BlogsListCreateByGroupAPIView(generics.ListCreateAPIView):
     queryset = Group.objects.all()
@@ -57,15 +58,21 @@ class UserGroupsListAPIView(generics.ListAPIView):
     serializer_class = GroupSerializer
 
     def get_queryset(self):
-        user = self.request.user
-        return user.joined_groups.all()
-
+        user_id = self.kwargs.get("id")
+        
+        try:
+            user = get_user_model().objects.get(id=user_id)
+        except get_user_model().DoesNotExist:
+            raise NotFound(detail="User not found", code=404)
+        
+        return user.joined_groups.order_by("id")
+    
+   
 class UserBlogsListAPIView(generics.ListAPIView):
     serializer_class = BlogSerializer
 
     def get_queryset(self):
         user = self.request.user
-        print(user)
         return user.blogs.all()
 
 
@@ -76,14 +83,17 @@ class UserPublicProfileRetrieveUpdateAPIView(generics.RetrieveUpdateAPIView):
 
 
 class GroupMemebersListAPIView(generics.ListAPIView):
-    queryset = Group.objects.all()
     serializer_class = MemeberOfGroupSerializer
 
-    def list(self, request, *args, **kwargs):
-        members = self.get_object().users
-        serializer = self.get_serializer(members,many=True)
-        return Response(serializer.data)
+    def get_queryset(self):
+        group_id = self.kwargs.get("id")
 
+        try:
+            group = Group.objects.get(id=group_id)
+        except Group.DoesNotExist:
+            raise NotFound(detail="Group with given id is not found")
+        
+        return group.users.order_by("first_name").all()
 
 
 
@@ -108,26 +118,38 @@ class BlogUpdateDestroyAPIView(generics.RetrieveUpdateDestroyAPIView):
 
 
 class GroupListCreateAPIView(generics.ListCreateAPIView):
-    queryset = Group.objects.all()
     serializer_class = GroupSerializer
 
-    def list(self, request):
-        group_name = request.query_params.get("group_name")
-        queryset = self.get_queryset()
+    def get_queryset(self):
+        group_name = self.request.query_params.get("name",None)
+        groups = Group.objects.all()
 
         if group_name:
-            queryset = queryset.filter(name=group_name)
+            groups =groups.filter(name__contains=group_name)
+        return groups
 
-        serializer = self.get_serializer(queryset,many=True)    
-        return Response(serializer.data)
 
 class GroupRetrieveUpdateDestroyAPIView(generics.RetrieveUpdateDestroyAPIView):
     queryset = Group.objects.all()
     serializer_class = GroupSerializer
 
 
-class GroupAddUserAPIView(views.APIView):
-    pass
+# class GroupAddUserAPIView(views.APIView):
+#     query_set = Group.objects.all()
+    
+
+#     def post(self,request,id):
+#         # print(request.data)
+#         new_user_id = request.data.get("user_id",None)
+
+#         if new_user_id:
+#             new_user = get_user_model().objects.get(id=new_user_id)
+#             group = Group.objects.get(id=id)
+#             group.users.add(new_user)
+
+
+
+#         return "d"
 
 
 class CommentListCreateAPIView(generics.ListCreateAPIView):
