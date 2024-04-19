@@ -17,6 +17,7 @@ import { Controller, useForm } from "react-hook-form";
 import { yupResolver } from "@hookform/resolvers/yup";
 import useCreateBlog from "../../api/hooks/blogs/useCreateBlog";
 import { useParams } from "react-router-dom";
+import { QueryClient, useQueryClient } from "react-query";
 
 const postSchema = yup.object({
   text: yup.string().required(),
@@ -42,7 +43,7 @@ const postSchema = yup.object({
 const PostForm = () => {
   const postRef = useRef();
   const { groupId } = useParams();
-  console.log(groupId);
+  const queryClient = useQueryClient();
   const { control, handleSubmit, reset } = useForm({
     resolver: yupResolver(postSchema),
   });
@@ -53,7 +54,12 @@ const PostForm = () => {
 
   const handleCreate = (data) => {
     console.log(data);
-    mutate(data);
+    mutate(data, {
+      onSuccess: () => {
+        // queryClient.setQueryData();
+        queryClient.invalidateQueries(["group", groupId, "blogs", 10]);
+      },
+    });
   };
 
   return (

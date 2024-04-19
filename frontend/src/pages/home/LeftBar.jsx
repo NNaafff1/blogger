@@ -1,22 +1,46 @@
 import { Box, Button, Card, Dialog, Skeleton, TextField } from "@mui/material";
 import GroupList from "../../components/groups/GroupList";
 import AddIcon from "@mui/icons-material/Add";
-import { useState } from "react";
+import { useEffect, useState } from "react";
 import GroupForm from "../../components/groups/GroupForm";
 import useGetGroupsUserIn from "../../api/hooks/users/useGetGroupsUserIn";
 import useAuth from "../../hooks/useAuth";
 
 const LeftBar = () => {
   const [isCreateGroupDialogOpen, setCreateGroupDialogOpen] = useState(false);
-  const { user } = useAuth();
-
-  const { data, isLoading, error, isError } = useGetGroupsUserIn({
-    id: user?.user_id,
-    options: {
-      enabled: Boolean(user),
-    },
+  const [groups, setGroups] = useState({
+    count: 0,
+    page_size: 10,
+    page: 1,
+    results: [],
   });
 
+  const { user } = useAuth();
+
+  const { data, isLoading, error, isError, refetch, isRefetching } =
+    useGetGroupsUserIn({
+      id: user?.user_id,
+      options: {
+        enabled: Boolean(user),
+        page_size: groups.page_size,
+      },
+    });
+
+
+   const handleViewMore = () => {
+     setGroups((prev) => ({ ...prev, page_size: prev.page_size + 10 }));
+   };
+
+
+  useEffect(() => {
+    refetch({
+      id: user?.user_id,
+      options: {
+        enabled: Boolean(user),
+        page_size: groups.page_size,
+      },
+    });
+  }, [groups.page_size]);
 
   return (
     <>
@@ -48,7 +72,18 @@ const LeftBar = () => {
               sx={{ width: "100%", height: "100px" }}
             />
           ) : (
-            data?.data && <GroupList groups={data?.data} />
+            data?.data && <GroupList groups={data.data?.results} />
+          )}
+          {groups.count > groups.page_size && (
+            <LoadingButton
+              loading={isRefetching}
+              type="submit"
+              variant="outlined"
+              fullWidth
+              onClick={handleViewMore}
+            >
+               show more
+            </LoadingButton>
           )}
         </Card>
       </Box>

@@ -1,13 +1,32 @@
-import { Box, Card, Container, Grid } from "@mui/material";
+import { Box, Card, Container, Grid, Skeleton } from "@mui/material";
 import PostList from "../../components/posts/PostList";
 import UserList from "../../components/users/UserList";
 import PostForm from "../../components/posts/PostForm";
 import { useParams } from "react-router-dom";
 import useGetGroupBlogs from "../../api/hooks/blogs/useGetGroupBlogs";
+import { useState } from "react";
 
 const GroupPage = () => {
   const { groupId } = useParams();
-  const { data, isLoading, error } = useGetGroupBlogs(groupId);
+  const [blogs, setBlogs] = useState({
+    count: 0,
+    page_size: 10,
+    page: 1,
+    results: [],
+  });
+
+  const { data, isLoading, error, isRefetching } = useGetGroupBlogs({
+    id: groupId,
+    params: {
+      page_size: blogs.page_size,
+    },
+  });
+
+  const handleViewMore = () => {
+    setBlogs((prev) => ({ ...prev, page_size: prev.page_size + 10 }));
+  };
+
+  console.log(data?.data)
 
   return (
     <Container maxWidth="lg">
@@ -21,7 +40,26 @@ const GroupPage = () => {
           </Box>
         </Grid>
         <Grid item xs={6}>
-          {data?.data && <PostList posts={data?.data} />}
+          {isLoading ? (
+            <Skeleton
+              variant="rectangular"
+              sx={{ width: "100%", height: "100px" }}
+            />
+          ) : (
+            data?.data && <PostList posts={data?.data.results} />
+            
+          )}
+          {blogs.count > blogs.page_size && (
+            <LoadingButton
+              loading={isRefetching}
+              type="submit"
+              variant="outlined"
+              fullWidth
+              onClick={handleViewMore}
+            >
+              show more
+            </LoadingButton>
+          )}
         </Grid>
         <Box height="1000px"></Box>
       </Grid>
