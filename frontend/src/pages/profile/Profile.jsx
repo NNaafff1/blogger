@@ -42,13 +42,17 @@ const Profile = () => {
               {isGroupsLoading ? (
                 <>loading...</>
               ) : (
-                <GroupList groups={groups.data} />
+                <GroupList groups={groups.data.results} />
               )}
             </Card>
           </Box>
         </Grid>
         <Grid item xs={6}>
-          {isBlogsLoading ? <>loading...</> : <PostList posts={blogs.data} />}
+          {isBlogsLoading ? (
+            <>loading...</>
+          ) : (
+            <PostList posts={blogs.data.results} />
+          )}
         </Grid>
         <Box height="1000px"></Box>
       </Grid>
