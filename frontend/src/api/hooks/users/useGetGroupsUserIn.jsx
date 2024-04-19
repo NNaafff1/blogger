@@ -6,7 +6,9 @@ const useGetGroupsUserIn = ({id,options}) => {
 
 
   const getGroupsUserIn = () => {
-    return axios({ url: `api/members/${id}/groups` });
+    return axios({
+      url: `api/members/${id}/groups?page_size=${options.page_size}`,
+    });
   };
 
   const request = useQuery(["members", id, "groups"], getGroupsUserIn, options);
