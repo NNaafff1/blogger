@@ -43,39 +43,24 @@ class GroupSerializer(serializers.ModelSerializer):
 
 class CommentSerilaizer(serializers.ModelSerializer):
     user = UserHyperLinkedSerializer(read_only=True)
-    blog_id = serializers.IntegerField(write_only=True,required=False)
 
     class Meta:
         model = models.Comment
         exclude = ["blog"]
 
     def create(self, validated_data):
-        blog_id = validated_data.get("blog_id", None)
+        blog = self.context["blog"]
         user = self.context["request"].user
+
+        comment = models.Comment.objects.create(
+            blog=blog, user=user, text=validated_data.get("text")
+        )
         
-        if not blog_id:
-            raise serializers.ValidationError("blog is required")
-
-        blog = models.Blog.objects.get(id=blog_id)
-
-        if blog:
-            comment = models.Comment.objects.create(
-                blog=blog, user=user, text=validated_data.get("text")
-            )
-            return comment
-        raise serializers.ValidationError("no such blog")
-    
-
+        return comment
+        
+        
     def update(self,instance,validated_data):
-        blog_id = validated_data.get('blog_id')
-        blog = instance.blog
-
-        if blog_id:
-            blog = models.Blog.objects.get(id=blog_id)
-
-        instance.blog = blog    
         instance.text = validated_data.get('text',instance.text)
-
         instance.save()
         return instance
     
@@ -99,6 +84,7 @@ class BlogSerializer(serializers.ModelSerializer):
     class Meta:
         model = models.Blog
         fields = "__all__"
+        ordering = ["-create_at"]
 
     def validate(self, data):
         request = self.context["request"]

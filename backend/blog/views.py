@@ -10,28 +10,29 @@ from django.db.models import Subquery, OuterRef
 from rest_framework.parsers import MultiPartParser, FormParser
 from django.contrib.auth import get_user_model
 from rest_framework.exceptions import NotFound
+from django.shortcuts import get_object_or_404
+
 
 class BlogsListCreateByGroupAPIView(generics.ListCreateAPIView):
-    queryset = Group.objects.all()
     serializer_class = BlogSerializer
     parser_classes = (MultiPartParser, FormParser)
     lookup_field="id"
 
-    def list(self, request, *args, **kwargs):
-        group = self.get_object()
 
-        serializer = self.get_serializer(group.blogs,many=True)    
-        return Response(serializer.data)
+    def get_queryset(self):
+        group = self.get_object()
+        return group.blogs.all()
+
+
+    def get_object(self):
+        return get_object_or_404(Group,id=self.kwargs.get("id"))
     
     def perform_create(self, serializer):
-        # self.
-        
-        # serializer
         return super().perform_create(serializer)
     
     def get_serializer_context(self):
         context = super().get_serializer_context()
-        context.update({"group":self.get_object()})
+        context.update({"group": self.get_object()})
         return context
 
 class UserHomeBlogsListGroupAPIView(generics.ListAPIView):
@@ -44,14 +45,9 @@ class UserHomeBlogsListGroupAPIView(generics.ListAPIView):
 
         blogs_from_joined_groups = blogs_from_joined_groups.order_by('-create_at')
         
-        print(blogs_from_joined_groups)
         return blogs_from_joined_groups
 
 
-
-# class BlogsCreateByUserAPIView(generics.CreateAPIView):
-#     queryset = Blog.objects.all()
-#     serializer_class = BlogSerializer
 
 
 class UserGroupsListAPIView(generics.ListAPIView):
@@ -106,15 +102,16 @@ class BlogUpdateDestroyAPIView(generics.RetrieveUpdateDestroyAPIView):
     queryset = Blog.objects.all()
     serializer_class = BlogSerializer
 
-    def destroy(self, request):
-        instance = self.get_object()
+# TODO fix in backend
+    # def destroy(self, request):
+    #     instance = self.get_object()
 
-        serializer = BlogSerializer(instance)
+    #     serializer = BlogSerializer(instance)
 
-        if serializer.is_valid():
-            instance.delete()
+    #     if serializer.is_valid():
+    #         instance.delete()
 
-        return Response(serializer.data)
+    #     return Response(serializer.data)
 
 
 class GroupListCreateAPIView(generics.ListCreateAPIView):
@@ -156,16 +153,17 @@ class CommentListCreateAPIView(generics.ListCreateAPIView):
     queryset = Comment.objects.all()
     serializer_class = CommentSerilaizer
 
-    def list(self, request):
-        blog_id = request.query_params.get("blog_id")
-        queryset = self.get_queryset()
+    def get_object(self):
+        return get_object_or_404(Blog,id=self.kwargs.get("id"))
 
-        if blog_id:
-            queryset = queryset.filter(blog__id=blog_id)
+    def get_queryset(self):
+        return self.get_object().comments.all()
+    
 
-        serializer = self.get_serializer(queryset,many=True)    
-        return Response(serializer.data)
-
+    def get_serializer_context(self):
+        context = super().get_serializer_context()
+        context.update({"blog":self.get_object()})
+        return context
 
 class CommentRetrieveUpdateDestroyAPIView(generics.RetrieveUpdateDestroyAPIView):
     queryset = Comment.objects.all()
