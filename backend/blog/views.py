@@ -1,7 +1,7 @@
 from django.shortcuts import render
 from rest_framework import generics,views
 from .models import Blog, Comment, Group, Reaction
-from .serializers import BlogSerializer, GroupSerializer, CommentSerilaizer
+from .serializers import BlogSerializer, GroupSerializer, CommentSerilaizer,ReactionSerializer,GlobalSearchSerializer
 from rest_framework.response import Response
 from accounts.serializers import MemeberOfGroupSerializer,UserPublicProfileSerializer
 from accounts.models import CustomUser
@@ -11,7 +11,23 @@ from rest_framework.parsers import MultiPartParser, FormParser
 from django.contrib.auth import get_user_model
 from rest_framework.exceptions import NotFound
 from django.shortcuts import get_object_or_404
+from rest_framework import status
+from django.db.models import Q
+from itertools import  chain
 
+
+class GlobalSearchAPIView(generics.ListAPIView):
+    serializer_class = GlobalSearchSerializer
+
+    def get_queryset(self):
+        name = self.request.query_params.get("name",None)
+
+        groups = Group.objects.filter(name__contains=name)
+        users = CustomUser.objects.filter(Q(username__contains=name)|Q(first_name__contains=name)|Q(last_name__contains=name))
+        resault_query = list(groups)+list(users)
+
+        return resault_query
+     
 
 class BlogsListCreateByGroupAPIView(generics.ListCreateAPIView):
     serializer_class = BlogSerializer
@@ -131,22 +147,20 @@ class GroupRetrieveUpdateDestroyAPIView(generics.RetrieveUpdateDestroyAPIView):
     serializer_class = GroupSerializer
 
 
-# class GroupAddUserAPIView(views.APIView):
-#     query_set = Group.objects.all()
-    
+class GroupAddUserAPIView(views.APIView):
 
-#     def post(self,request,id):
-#         # print(request.data)
-#         new_user_id = request.data.get("user_id",None)
+    def post(self,request,id):
+        new_user_id = request.data.get("user_id",None)
 
-#         if new_user_id:
-#             new_user = get_user_model().objects.get(id=new_user_id)
-#             group = Group.objects.get(id=id)
-#             group.users.add(new_user)
+        if new_user_id is None:
+            return Response({"message":"user is required"},status=status.HTTP_400_BAD_REQUEST)
 
+        new_user = get_object_or_404(get_user_model(),id=new_user_id)
+        group = get_object_or_404(Group,id=id)
+        group.users.add(new_user)
 
+        return Response({"message": "user added to group successfully"})
 
-#         return "d"
 
 
 class CommentListCreateAPIView(generics.ListCreateAPIView):
@@ -157,7 +171,7 @@ class CommentListCreateAPIView(generics.ListCreateAPIView):
         return get_object_or_404(Blog,id=self.kwargs.get("id"))
 
     def get_queryset(self):
-        return self.get_object().comments.all()
+        return self.get_object().comments.order_by("-create_at").all()
     
 
     def get_serializer_context(self):
@@ -171,9 +185,23 @@ class CommentRetrieveUpdateDestroyAPIView(generics.RetrieveUpdateDestroyAPIView)
     partial = True
 
 
-class ReactionListCreateAPIView(generics.ListCreateAPIView):
-    pass
+class ReactionsListCreateAPIView(generics.ListCreateAPIView):
+    serializer_class = ReactionSerializer
+    
+    def get_object(self):
+        return get_object_or_404(Blog,id=self.kwargs.get("pk"))
+    
+
+    def get_queryset(self):
+        return Reaction.objects.filter(blog=self.get_object())
+    
+    def get_serializer_context(self):
+        context = super().get_serializer_context()
+        context.update({"blog":self.get_object()})
+        return context
+
 
 
 class ReactionRetrieveUpdateDestroyAPIView(generics.RetrieveUpdateDestroyAPIView):
-    pass
+    serializer_class = ReactionSerializer
+    queryset = Reaction.objects.all()

@@ -49,9 +49,8 @@ const Post = ({ id, text, create_at, image, user, group }) => {
 
   return (
     <>
-      <Card key={id}>
+      <Card key={id} >
         <CardHeader
-          // component={Link}
           to={`/profile/${user.id}`}
           sx={{
             textTransform: "none",
@@ -147,12 +146,13 @@ const Post = ({ id, text, create_at, image, user, group }) => {
           <Button fullWidth onClick={() => setCommentDialogOpen(true)}>
             comment
           </Button>
-          <Button fullWidth>react</Button>
+          {/* <Button fullWidth>react</Button> */}
         </CardActions>
       </Card>
       <CommentDialog
         isCommentDialogOpen={isCommentDialogOPen}
         setCommentDialogOpen={setCommentDialogOpen}
+        blog_id={id}
       />
     </>
   );

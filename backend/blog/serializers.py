@@ -3,6 +3,7 @@ from . import models
 from accounts.models import CustomUser
 
 
+
 class UserHyperLinkedSerializer(serializers.ModelSerializer):
     class Meta:
         model = CustomUser
@@ -13,10 +14,28 @@ class UserHyperLinkedSerializer(serializers.ModelSerializer):
         # }
 
 
+
+
 class GroupHyperLinkedSerializer(serializers.ModelSerializer):
     class Meta:
         model = models.Group
         fields = ["id", "name"]
+
+
+class GlobalSearchSerializer(serializers.Serializer):
+    id = serializers.IntegerField()
+    name = serializers.SerializerMethodField()
+    item_type = serializers.SerializerMethodField()
+
+
+    def get_item_type(self,obj):
+        return obj.__class__.__name__ if obj.__class__.__name__!= "CustomUser" else "User";
+    
+    def get_name(self,obj):
+        if obj.__class__.__name__ =="Group":
+            return obj.name
+        elif obj.__class__.__name__ =="CustomUser":
+            return obj.username
 
 
 class GroupSerializer(serializers.ModelSerializer):
@@ -47,6 +66,8 @@ class CommentSerilaizer(serializers.ModelSerializer):
     class Meta:
         model = models.Comment
         exclude = ["blog"]
+        ordering = ["-create_at"]
+
 
     def create(self, validated_data):
         blog = self.context["blog"]
@@ -67,10 +88,31 @@ class CommentSerilaizer(serializers.ModelSerializer):
     
 
 class ReactionSerializer(serializers.ModelSerializer):
+    user = UserHyperLinkedSerializer(read_only=True)
+
     class Meta:
         model = models.Reaction
-        fields = "__all__"
+        exclude = ["blog"]
         read_only_fields = ["create_at"]
+        # write_only_fields =["blog"]
+
+    def create(self, validated_data):
+        user = self.context["request"].user
+        blog = self.context["blog"]
+
+        reaction = models.Reaction.objects.create(
+            user=user,
+            blog=blog,
+            reaction_code = validated_data.get("reaction_code")
+        )
+        return reaction  
+
+
+    def update(self, instance, validated_data):
+        instance.reaction_code = validated_data.get("reaction_code")
+        instance.save()
+        return instance
+
 
 
 
@@ -119,3 +161,4 @@ class BlogSerializer(serializers.ModelSerializer):
         instance.save()
 
         return instance
+

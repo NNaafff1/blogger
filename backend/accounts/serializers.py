@@ -109,7 +109,7 @@ class CustomRegisterSerializer(RegisterSerializer):
 class MemeberOfGroupSerializer(serializers.ModelSerializer):
     class Meta:
         model = CustomUser
-        fields = ["first_name","id"]
+        fields = ["first_name","id",'last_name']
 
 
 class UserPublicProfileSerializer(serializers.ModelSerializer):

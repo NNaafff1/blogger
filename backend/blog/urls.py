@@ -3,6 +3,7 @@ from django.urls import path, include
 from . import views
 
 urlpatterns = [
+    path("api/search", view=views.GlobalSearchAPIView.as_view()),
     path("api/groups/<int:id>/blogs/", view=views.BlogsListCreateByGroupAPIView.as_view()),
     path("api/users/<int:id>/blogs", view=views.UserBlogsListAPIView.as_view()),
     path("api/blogs/home", view=views.UserHomeBlogsListGroupAPIView.as_view()),
@@ -19,7 +20,7 @@ urlpatterns = [
         "api/comments/<int:pk>",
         view=views.CommentRetrieveUpdateDestroyAPIView.as_view(),
     ),
-    path("api/reactions", view=views.ReactionListCreateAPIView.as_view()),
+    path("api/blogs/<int:pk>/reactions/", view=views.ReactionsListCreateAPIView.as_view()),
     path(
         "api/reactions/<int:pk>",
         view=views.ReactionRetrieveUpdateDestroyAPIView.as_view(),

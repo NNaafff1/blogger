@@ -5,6 +5,7 @@ import { useEffect, useState } from "react";
 import GroupForm from "../../components/groups/GroupForm";
 import useGetGroupsUserIn from "../../api/hooks/users/useGetGroupsUserIn";
 import useAuth from "../../hooks/useAuth";
+import { LoadingButton } from "@mui/lab";
 
 const LeftBar = () => {
   const [isCreateGroupDialogOpen, setCreateGroupDialogOpen] = useState(false);
