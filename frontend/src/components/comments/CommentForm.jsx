@@ -1,11 +1,30 @@
-import { Avatar, Box,  IconButton, Stack, TextField } from "@mui/material";
+import { Avatar, Box, IconButton, Stack, TextField } from "@mui/material";
 import { useRef } from "react";
 import SendIcon from "@mui/icons-material/Send";
-const CommentForm = () => {
+import useCreateComment from "../../api/hooks/comments/useCreateComment";
+import { LoadingButton } from "@mui/lab";
+import { useQueryClient } from "react-query";
+// import EmojiPicker from "emoji-picker-react";
+const CommentForm = ({ blog_id }) => {
   const commentRef = useRef();
+  const queryClient = useQueryClient()
+  const { isLoading, mutate, isError } = useCreateComment();
 
   const sendComment = () => {
-    console.log(commentRef.current.value);
+    mutate(
+      {
+        blog_id: blog_id,
+        data: {
+          text: commentRef.current.value,
+        },
+      },
+      {
+        onSuccess: (data, variables, context) => {
+          commentRef.current.value = "";
+          queryClient.invalidateQueries(["comments", blog_id]);
+        },
+      }
+    );
   };
 
   return (
@@ -21,12 +40,15 @@ const CommentForm = () => {
           maxRows={5}
           multiline
         />
+        {/* <EmojiPicker /> */}
       </Stack>
       <Stack alignItems="end">
         <Box>
-          <IconButton onClick={sendComment}>
-            <SendIcon />
-          </IconButton>
+          <LoadingButton
+            startIcon={<SendIcon />}
+            loading={isLoading}
+            onClick={sendComment}
+          ></LoadingButton>
         </Box>
       </Stack>
     </Stack>

@@ -2,14 +2,17 @@ import React from "react";
 import useAxios from "../auth/useAxios";
 import { useQuery } from "react-query";
 
-const useGetUserHomeBlogs = ({ config } = { config: {} }) => {
+const useGetUserHomeBlogs = ({ params } = { params: {} }) => {
   const axios = useAxios();
 
   const getUserHomeBlogsRequest = () => {
-    return axios({ url: `api/users/home-blogs/` });
+    return axios({ url: `api/blogs/home?page_size=${params.page_size}` });
   };
 
-  const request = useQuery(["blogs", "home"], getUserHomeBlogsRequest);
+  const request = useQuery(
+    ["blogs", "home", params.page_size],
+    getUserHomeBlogsRequest
+  );
 
   return request;
 };

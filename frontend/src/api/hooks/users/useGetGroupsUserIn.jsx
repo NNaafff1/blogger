@@ -11,7 +11,9 @@ const useGetGroupsUserIn = ({id,options}) => {
     });
   };
 
-  const request = useQuery(["members", id, "groups"], getGroupsUserIn, options);
+  const request = useQuery(["members", id, "groups"], getGroupsUserIn, {
+    enabled:options.enabled
+  });
   return request;
 };
 

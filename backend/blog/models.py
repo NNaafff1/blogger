@@ -12,6 +12,19 @@ class Group(models.Model):
     users = models.ManyToManyField(CustomUser, related_name="joined_groups")
 
 
+class UserGroupMemebership(models.Model):
+    STATUS = (
+        ('blocked', 'blocked'),
+        ('pending', 'pending'),
+        ('proven', 'proven'),
+    )
+    user = models.ForeignKey(CustomUser,on_delete=models.CASCADE)
+    group = models.ForeignKey(Group,on_delete=models.CASCADE)
+    status = models.CharField(max_length=20,choices=STATUS,default='pending')
+
+    class Meta:
+        unique_together = (("user", "group"),)
+
 class Blog(models.Model):
     user = models.ForeignKey(CustomUser, on_delete=models.CASCADE, related_name="blogs")
     group = models.ForeignKey(Group, on_delete=models.CASCADE, related_name="blogs")
